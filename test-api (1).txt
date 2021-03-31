@@ -1,0 +1,49 @@
+
+Necesito que desarrolles un pequeño programa en ruby que te permita conectarte a un api, obtener información, procesarla y entregar el resultado.
+
+El programa debe recibir datos de una factura (rut emisor, rut receptor, monto de la factura, folio de la factura, fecha de vencimiento de la factura), hacer una cotización de la factura en un endpoint y mostrar el resultado de la cotización de la factura.
+
+Ejemplo:
+Si tu aplicación recibe: 
+
+Rut Emisor: 76329692-K
+Rut Deudor: 77360390-1
+Monto de la factura: 1000000
+Folio: 75
+fecha de vencimiento de la factura: 2020-11-30
+
+Al cotizar esos datos en el api te entregará (ejemplo:
+
+{
+    "document_rate": 1.9,
+    "commission": 23990.0,
+    "advance_percent": 99.0,
+}
+
+document_rate = Tasa de Negocio
+commission = Comisión de la operación
+advance_percent = Porcentaje de anticipo
+
+Tu programa debe procesar esa información y entregar el costo de operar esa factura de la siguiente forma:
+
+Costo de financiamiento (costo de operar la factura con nosotros) = (Monto de la factura * Porcentaje de anticipo) * (Tasa de Negocio / 30 * Días de plazo[Días corridos desde hoy hasta la fecha de vencimiento + 1 dia extra])
+Giro a recibir (Monto a recibir por el emisor si opera)= (Monto de la factura * Porcentaje de anticipo) - (Costo de financiamiento + Comisión de la operación)
+Excedentes (Monto a recibir al saldarse la factura) = Monto de la factura - (Monto de la factura * Porcentaje de anticipo)
+
+Para conectarte al api puedes usar el siguiente ejemplo, debe ir con el api key en el header:
+
+curl --request GET 'https://chita.cl/api/v1/pricing/simple_quote?client_dni=76329692-K&debtor_dni=773603901&document_amount=1000000&folio=75&expiration_date=2020-11-30' \
+--header 'X-Api-Key: UVG5jbLZxqVtsXX4nCJYKwtt'
+
+Para los datos del ejemplo tu aplicación debe entregar:
+
+Costo de financiamiento: $19.437
+Giro a recibir: $946.573
+Excedentes: $10.000
+
+Información de ayuda:
+Días de plazo = 31 días entre el 2020-07-14 al 2020-11-30
+
+Costo de financiamiento = 1000000 * (99.0/100) * ((1.9/100) / 30 * 31)
+Giro a recibir = (1000000 * (99.0/100)) - (1000000 * (99.0 / 100) * ((1.9/100) / 30 * 31)) - (23990)
+Excedentes = 1000000 - (1000000 * (99.0/100))
